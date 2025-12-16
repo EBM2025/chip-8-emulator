@@ -1,3 +1,5 @@
+use rand::random;
+
 const RAM_SIZE: usize = 4096; // chip8 implemented for 4KB RAM
 const NUM_REG: usize = 16;
 const STACK_SIZE: usize = 16;
@@ -27,7 +29,7 @@ const FONTSET: [u8; FONTSET_SIZE] = [
 pub const WIDTH: usize = 64;
 pub const HEIGHT: usize = 32;
 
-pub struct Emu {
+pub struct Emulator {
     pc: u16, // index of current instruction
     ram [u8; RAM_SIZE],
     screen: [bool; WIDTH * HEIGHT], // black and white pixel screen array
@@ -40,7 +42,7 @@ pub struct Emu {
     sound_timer: u8 // emits noise every CPU cycle
 }
 
-impl Emu {
+impl Emulator {
     pub fn new() -> Self {
         let mut new_emu = Self {
             pc: START_ADDR,
@@ -146,6 +148,69 @@ impl Emu {
             (8, _, _, 1) | (8, _, _, 2) | (8, _, _, 3) => { // V[x] |= V[y], where op = 0x8xy1or2or3
                 self.v_reg[d2 as usize] |= self.v_reg[d3 as usize];
             },
+            (8, _, _, 4) => { // V[x] += V[y]
+                let (n_vx, carry) = self.v_reg[d2 as usize].overflowing_add(self.v_reg[d3 as usize]);
+                let flag = if carry { 1 } else { 0 };
+
+                self.v_reg[d2 as usize] = n_vx; // set the X reg 
+                self.v_reg[0xF] = flag; // set the overflow v reg flag
+            },
+            (8, _, _, 5) => { //  V[x] -= V[y]
+                let (n_vx, carry) = self.v_reg[d2 as usize].overflowing_sub(self.v_reg[d3 as usize]);
+                let flag = if carry { 1 } else { 0 };
+
+                self.v_reg[d2 as usize] = n_vx;
+                self.v_reg[0xF] = flag;
+            },
+            (8, _, _, 6) => { // V[x] >> 1, store removed bit in 0xF register
+                let bit = (self.v_reg[d2 as usize] & 0x1) // capture the flag bit
+                self.v_reg[d2 as usize] = (self.v_reg[d2 as usize] >> 1);
+                self.v_reg[0xF] = bit;
+            },
+            (8, _, _, 7) { // V[y] -= V[x] - same as 0x8xy5 in opposite order
+                let (n_vy, carry) = self.v_reg[d3 as usize].overflowing_sub(self.v_reg[d2 as usize]);
+                let flag = if carry { 1 } else { 0 };
+
+                self.v_reg[d3 as usize] = n_vy;
+                self.v_reg[0xF] = flag;
+            },
+            (8, _, _, 0xE) { // V[x] << 1, store removed bit in 0xF register
+                let bit = ((self.v_reg[d2 as usize] as u8) & 0x10); // capture the upper bit
+                self.v_reg[d2 as usize] = (self.v_reg[d2 as usize] << 1);
+                self.v_reg[0xF] = bit;
+            },
+            (9, _, _, 0) { // if V[x] != V[y], skip instruction
+                if self.v_reg[d2 as usize] != self.v_reg[d3 as usize] {
+                    self.pc += 2;
+                }
+            },
+            (0xA, _, _, _) { // 0xAyyy, assign I-register 0xyyy - address pointer to RAM
+                let yyy = (op & 0xFFF);
+                self.i_reg = yyy;
+            },
+            (0xB, _, _, _) { // JMP V0 + yyy, where op = 0xByyy - move pc 
+                let yyy = (op & 0xFFF);
+                self.pc = (self.v_reg[0] as u16) + yyy;
+            },
+            (0xC, _, _, _) { // rand() & yy - generate rand number and & with last two of op
+                let yy = (op & 0xFF) as u8;
+                let rng: u8 = random();
+                self.v_reg[d2 as usize] = yy & rng;
+            },
+            (0xD, _, _, _) { // draw sprite - second and third digit for (x,y) coord - 0xDxyn
+                // x and y for x, y coord
+                let x_val = self.v_reg[d2 as usize] as u16;
+                let y_val = self.v_reg[d3 as usize] as u16;
+                
+                // n represents height in rows of the sprite
+                let n = d4;
+                let mut flips = false; // keep track of fliped pixels
+
+                for i in 0..n {
+                    
+                }
+            }
+
 
             (_, _, _, _) => unimplemented!("Unimplemented operation code: {}", op);
         }
