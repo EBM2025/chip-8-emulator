@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 chip8 = { path = "../chip8" }
-sdl2 = "0.35"
+sdl2 = "*"
