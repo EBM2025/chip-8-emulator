@@ -1,0 +1,36 @@
+# Rust build artifacts
+target/
+**/target/
+
+# WASM build outputs
+*.wasm
+*.rlib
+*.rmeta
+*.d
+*.dylib
+*.so
+
+# Compiled Object files
+*.o
+*.rcgu.o
+
+# wasm-pack / wasm-bindgen outputs
+pkg/
+dist/
+
+# Cargo.lock for libraries (keep for binaries)
+# Uncomment if this is a library:
+# **/Cargo.lock
+
+# Node / web tooling
+node_modules/
+
+# OS junk
+.DS_Store
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml

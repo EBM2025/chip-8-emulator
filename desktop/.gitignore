@@ -1,1 +1,19 @@
-/target
+# Rust build artifacts
+target/
+**/target/
+
+# WASM build outputs
+*.wasm
+*.rlib
+*.rmeta
+*.d
+
+# wasm-pack / wasm-bindgen outputs
+pkg/
+dist/
+
+# Node / web tooling (if applicable)
+node_modules/
+
+# OS junk
+.DS_Store
