@@ -1,7 +1,6 @@
 # CHIP-8 Emulator (Rust + WASM)
 
-A simple **CHIP-8 emulator written in Rust**, with support for running both as a native application and in the browser via **WebAssembly**.  
-This project was built as a way to learn Rust. Credit to https://github.com/aquova
+A simple CHIP-8 emulator written to learn Rust fundamentals. Credit to https://github.com/aquova
 
 ---
 
